@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbie Image Gallery ✨</title>
+  <style>
+    :root {
+      --bg: #fff0f5;
+      --panel: #ffffffee;
+      --text: #d6006e;
+      --muted: #f06292;
+      --accent: #ff1493;
+      --accent-2: #ff69b4;
+      --border: #ffd6e8;
+      --shadow: 0 16px 40px rgba(214, 0, 110, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #fff0f5 0%, #ffc0db 40%, #ff85b3 100%);
+      color: var(--text);
+      font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive;
+      padding: 24px;
+    }
+
+    .gallery {
+      width: min(900px, 100%);
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .title {
+      margin: 0 0 16px;
+      font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+      letter-spacing: 0.02em;
+      text-align: center;
+      text-shadow: 1px 1px 4px #ff69b440;
+    }
+
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 3px solid var(--border);
+      background: linear-gradient(145deg, #fff5f9, #ffe0ed);
+      width: 100%;
+    }
+
+    .track {
+      display: flex;
+      transition: transform 400ms ease;
+      will-change: transform;
+    }
+
+    .slide {
+      min-width: 100%;
+      width: 100%;
+      flex-shrink: 0;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide img {
+      max-width: 100%;
+      max-height: min(60vh, 500px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 18px;
+      border: 3px solid #ffffff77;
+      box-shadow: 0 12px 28px rgba(214, 0, 110, 0.2);
+      background: #fff5f9;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .controls {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 2px solid var(--accent);
+      color: #fff;
+      background: linear-gradient(135deg, #ff69b4, #ff1493);
+      border-radius: 999px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px #ff149344;
+      transition: transform 150ms ease, box-shadow 150ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px #ff149366;
+    }
+
+    .dots {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-inline: auto;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      background: #ffd6e8;
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .dot.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      transform: scale(1.2);
+      border-color: #ff1493;
+    }
+
+    .status {
+      color: var(--muted);
+      min-width: 70px;
+      text-align: right;
+      font-size: 0.95rem;
+      font-weight: bold;
+    }
+
+    .caption {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 1rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <section class="gallery" aria-label="Barbie Image Gallery">
+    <h1 class="title">✨ Barbie Gallery ✨</h1>
+
+    <div class="carousel">
+      <div class="track" id="track">
+        <figure class="slide">
+          <img alt="Barbie 2023 Movie" src="https://upload.wikimedia.org/wikipedia/en/0/0b/Barbie_2023_poster.jpg" />
+        </figure>
+        <figure class="slide">
+          <img alt="Barbie Dreamhouse" src="https://upload.wikimedia.org/wikipedia/en/2/2c/Barbie_The_Movie_%282023%29.jpg" />
+        </figure>
+        <figure class="slide">
+          <img alt="Barbie as The Princess and the Pauper" src="https://upload.wikimedia.org/wikipedia/en/4/40/Barbie_as_the_Princess_and_the_Pauper.jpg" />
+        </figure>
+      </div>
+    </div>
+
+    <div class="caption" id="caption"></div>
+
+    <div class="controls">
+      <button class="btn" id="prev" aria-label="Previous image">← Previous</button>
+      <div class="dots" id="dots" aria-label="Slide indicators"></div>
+      <button class="btn" id="next" aria-label="Next image">Next →</button>
+      <div class="status" id="status">1 / 3</div>
+    </div>
+  </section>
+
+  <script>
+    const track = document.getElementById('track');
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const dotsWrap = document.getElementById('dots');
+    const status = document.getElementById('status');
+    const captionEl = document.getElementById('caption');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+
+    const captions = [
+      'Barbie (2023) — She\'s everything. He\'s just Ken.',
+      'Life in plastic, it\'s fantastic!',
+      'The Princess and the Pauper (2004) — The best Barbie movie ever!'
+    ];
+
+    let index = 0;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    });
+
+    const dots = Array.from(document.querySelectorAll('.dot'));
+
+    function render() {
+      track.style.transform = `translateX(-${index * 100}%)`;
+      dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+      status.textContent = `${index + 1} / ${slides.length}`;
+      captionEl.textContent = captions[index] || '';
+    }
+
+    function goTo(i) {
+      index = (i + slides.length) % slides.length;
+      render();
+    }
+
+    prevBtn.addEventListener('click', () => goTo(index - 1));
+    nextBtn.addEventListener('click', () => goTo(index + 1));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') goTo(index - 1);
+      if (e.key === 'ArrowRight') goTo(index + 1);
+    });
+
+    render();
+  </script>
+</body>
+</html>
